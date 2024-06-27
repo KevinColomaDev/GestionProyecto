@@ -1,0 +1,63 @@
+.App {
+  display:flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.datos{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+  align-items: center;
+}
+
+.datos input{
+  width: 300px;
+  height: 20px;
+  font-size: 20px;
+  padding-left: 10px;
+  border-radius: 5px;
+  border-color: black;
+  margin: 5px;
+}
+
+.datos button{
+  width: 120px;
+  height: 30px;
+  margin-top: 5px;
+}
+
+.menu {
+  position: fixed; /* Fija la posición del menú */
+  top: 0; /* Lo fija en la parte superior de la página */
+  left: 0; /* Lo fija en el borde izquierdo de la página */
+  width: 150px; /* Ancho del menú */
+  height: 100vh; /* 100% del alto de la ventana */
+  background-color: #f2f2f2; /* Color de fondo del menú */
+  z-index: 1000; /* Asegura que el menú esté por encima de otros elementos */
+  text-align: center;
+}
+
+.menu ul {
+  list-style-type: none; /* Quita los estilos de lista (puntos) */
+  padding: 0; /* Quita el relleno predeterminado de la lista */
+}
+
+.menu ul li {
+  padding: 10px;
+}
+
+.menu ul li a {
+  text-decoration: none; /* Quita el subrayado predeterminado de los enlaces */
+  color: #333; /* Color del texto de los enlaces */
+  display: block; /* Hace que los enlaces ocupen todo el ancho del contenedor */
+}
+
+.menu ul li a:hover {
+  background-color: #ddd; /* Cambia el color de fondo cuando el cursor pasa por encima */
+}
+
+.App{
+  margin-left: 150px;
+}
