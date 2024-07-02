@@ -19,6 +19,24 @@ app.listen(3001, () => {
     console.log('Corriendo en el puerto 3001')
 })
 
+//-----------------------------------------------------GESTION PROYECTOS --------------------------------------------------------------------------------------------
+
+app.post('/gestion', (req,res)=>{
+  const {fk_iduser, fk_idproyecto, fk_idperfil, fk_idperfilct} = req.body;
+  const sql = 'INSERT INTO carga(fk_iduser, fk_idproyecto,fk_idperfil, fk_idperfilct) VALUES (?,?,?,?)'
+
+  db.query(sql, [fk_iduser, fk_idproyecto, fk_idperfil, fk_idperfilct],
+    (err, result) =>{
+      if(err){
+        console.log(err);
+      }else{
+        res.send(result);
+      }
+    }
+  )
+})
+
+
 //------------------------------------------------------COMISION TECNICA----------------------------------------------------------------------------------------------
 
 app.post('/crearperfilcomision',(req,res) =>{

@@ -16,6 +16,7 @@ function Sidebar() {
     <li><Link to='/PerfilCT'><img width='30' height='30' src= {comision} /><br />Perfil Comision Tecnica</Link></li>
     <li><Link to='/Perfil'><img width='30' height='30' src= {perfil} /><br />Perfil </Link></li>
     <li><Link to='/Proyecto'><img width='30' height='30' src= {proyecto} /><br />Proyecto </Link></li>
+    <li><Link to='/Gestion'><img width='30' height='30' src= '' /><br />Gestion </Link></li>
   </ul>
 </div>
     
