@@ -137,20 +137,33 @@ app.get('/perfil', (req,res) =>{
 })
 //---------------------------------------------------------PROYECTO---------------------------------------------------------------------------------------------------
 
-app.post('/crearproyecto', (req,res) => {
-  const {nombreProyecto, complejidad} = req.body
-  const sql = 'INSERT INTO proyectos (nombre, complejidad) VALUES (?,?)';
+app.post('/crearproyecto', async (req, res) => {
+  const { nombreProyecto, complejidad } = req.body;
+  try {
+    const [existingProject] = await db.promise().query(
+      'SELECT * FROM proyectos WHERE nombre = ?',
+      [nombreProyecto]
+    );
 
-  db.query(sql, [nombreProyecto, complejidad],
-    (err,result)=>{
-      if(err){
-        console.log(err)
-      }else{
-        res.send(result)
-      }
+    if (existingProject.length > 0) {
+      return res.status(409).json({ error: 'El proyecto ya existe' });
     }
-  )
-})
+
+    const sql = 'INSERT INTO proyectos (nombre, complejidad) VALUES (?, ?)';
+    db.query(sql, [nombreProyecto, complejidad], (err, result) => {
+      if (err) {
+        console.error('Error al insertar proyecto:', err);
+        return res.status(500).json({ error: 'Error al insertar el proyecto' });
+      } else {
+        res.status(201).json({ message: 'Proyecto creado exitosamente', id: result.insertId });
+      }
+    });
+  } catch (err) {
+    console.error('Error en el servidor:', err);
+    res.status(500).json({ error: 'Error en el servidor' });
+  }
+});
+
 
 app.get('/proyectos', (req,res)=>{
   db.query('SELECT * FROM proyectos',
@@ -163,6 +176,8 @@ app.get('/proyectos', (req,res)=>{
     }
   )
 })
+
+
 //---------------------------------------------------------USUARIOS-------------------------------------------------------------------------------------------------
 
 app.get('/validarusuario/:userBanec', async (req, res) => {

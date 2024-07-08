@@ -9,6 +9,7 @@ function Proyecto(){
 
     const [nombreProyecto, setnombreProyecto] = useState('');
     const [complejidad, setComplejidad] = useState('');
+    const nombreProyectoNormalizado = nombreProyecto.toLowerCase();
 
     const add = (event) => {
         event.preventDefault()
@@ -20,7 +21,7 @@ function Proyecto(){
             });
         }else{
             axios.post("http://10.157.152.50:3001/crearproyecto",{
-                nombreProyecto: nombreProyecto,
+                nombreProyecto: nombreProyectoNormalizado,
                 complejidad:complejidad
             }).then(()=>{
                 limpiarDatos();
@@ -31,6 +32,17 @@ function Proyecto(){
                     timer: 1000
                 })
             })
+            .catch(error => {
+                console.error('Error al crear el proyecto:', error.response ? error.response.data.error : error.message);
+                limpiarDatos();
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: error.response && error.response.status === 409
+                        ? 'El proyecto ya esta registrado.'
+                        : 'Hubo un error al asignar el proyecto.'
+                });
+            });
         }
         
     }
