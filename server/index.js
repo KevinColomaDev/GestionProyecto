@@ -18,23 +18,65 @@ const db = mysql.createPool({
 app.listen(3001, () => {
     console.log('Corriendo en el puerto 3001')
 })
+//------------------------------------------------------LÓGICA CARGA LABORAL-----------------------------------------------------------------------------------------
+
+app.get('/complejidadTotal', async (req, res) => {
+  try {
+    const [rows, fields] = await db.promise().query('SELECT SUM(complejidad) as total FROM proyectos');
+
+    const complejidadTotal = rows[0].total;
+    res.json({ complejidadTotal });
+  } catch (err) {
+    console.error('Error al obtener la complejidad total: ', err);
+    res.status(500).json({ error: 'Error en el servidor' });
+  }
+});
+
+
+app.get('/asignaciones/:userId', async (req, res) => {
+  const userId = req.params.userId;
+  try {
+    const [rows, fields] = await db.promise().query(
+      "SELECT p.idproyectos, p.nombre, p.complejidad FROM proyectos p JOIN carga c ON p.idproyectos = c.fk_idproyecto WHERE c.fk_iduser = ?",
+      [userId]
+    );
+    res.json(rows);
+  } catch (err) {
+    console.error('Error al obtener asignaciones:', err);
+    res.status(500).json({ error: 'Error en el servidor' });
+  }
+});
 
 //-----------------------------------------------------GESTION PROYECTOS --------------------------------------------------------------------------------------------
 
-app.post('/gestion', (req,res)=>{
-  const {fk_iduser, fk_idproyecto, fk_idperfil, fk_idperfilct} = req.body;
-  const sql = 'INSERT INTO carga(fk_iduser, fk_idproyecto,fk_idperfil, fk_idperfilct) VALUES (?,?,?,?)'
+app.post('/gestion', async (req, res) => {
+  const { fk_iduser, fk_idproyecto, fk_idperfil, fk_idperfilct } = req.body;
 
-  db.query(sql, [fk_iduser, fk_idproyecto, fk_idperfil, fk_idperfilct],
-    (err, result) =>{
-      if(err){
-        console.log(err);
-      }else{
-        res.send(result);
-      }
+  try {
+    const [existingAssignments] = await db.promise().query(
+      'SELECT COUNT(*) as count FROM carga WHERE fk_iduser = ? AND fk_idproyecto = ?',
+      [fk_iduser, fk_idproyecto]
+    );
+
+    if (existingAssignments[0].count > 0) {
+      return res.status(409).json({ error: 'El usuario ya está asignado a este proyecto' });
     }
-  )
-})
+
+    const sql = 'INSERT INTO carga(fk_iduser, fk_idproyecto, fk_idperfil, fk_idperfilct) VALUES (?, ?, ?, ?)';
+    db.query(sql, [fk_iduser, fk_idproyecto, fk_idperfil, fk_idperfilct], (err, result) => {
+      if (err) {
+        console.error('Error al insertar la asignación:', err);
+        return res.status(500).json({ error: 'Error al insertar la asignación' });
+      } else {
+        res.status(201).json({ message: 'Asignación creada con éxito', id: result.insertId });
+      }
+    });
+  } catch (err) {
+    console.error('Error en el servidor:', err);
+    res.status(500).json({ error: 'Error en el servidor' });
+  }
+});
+
 
 
 //------------------------------------------------------COMISION TECNICA----------------------------------------------------------------------------------------------
@@ -153,6 +195,7 @@ app.post('/crearusuario', (req, res) => {
       }
     }
   )
+  
 
 }
 )

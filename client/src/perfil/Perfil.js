@@ -43,6 +43,24 @@ return (
     <div className="container-fluid d-flex">
       <Sidebar />
       <div className="App flex-grow-1"> {/* Utiliza flex-grow-1 para que ocupe el espacio restante */}
+        <nav className="navbar navbar-expand-lg navbar-light bg-light">
+            <div className="container-fluid">
+                <ul className="navbar-nav"> {/* Elimina me-auto mb-2 mb-lg-0 */}
+                    <li className="nav-item">
+                        <Link to="/" className="nav-link active">Usuarios</Link>
+                    </li>
+                    <li className="nav-item">
+                        <Link to="/PerfilCT" className="nav-link active">Perfiles Comision Tecnica</Link>
+                    </li>
+                    <li className="nav-item">
+                        <Link to='/Perfil' className='nav-link active'>Perfiles</Link>
+                    </li>
+                    <li className="nav-item">
+                        <Link to='/Proyecto' className="nav-link active">Proyectos</Link>
+                    </li>
+                </ul>
+            </div>
+        </nav>
         <div className="card text-center">
 
           <div className="card-header">

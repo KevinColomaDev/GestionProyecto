@@ -86,13 +86,17 @@ function Gproyectos(){
                     timer: 1000
                 })
             })
-            .catch(() =>{
+            .catch(error => {
+                console.error('Error al asignar el proyecto:', error.response ? error.response.data.error : error.message);
+                limpiarData();
                 Swal.fire({
-                    title:'Hubo un error al asignar el prooyecto',
                     icon: 'error',
-                    timer: 1000
-                })
-            })
+                    title: 'Oops...',
+                    text: error.response && error.response.status === 409
+                        ? 'El usuario ya está asignado a este proyecto.'
+                        : 'Hubo un error al asignar el proyecto.'
+                });
+            });
             
         }
         
