@@ -19,15 +19,15 @@ app.listen(3001, () => {
     console.log('Corriendo en el puerto 3001')
 })
 //------------------------------------------------------LÓGICA CARGA LABORAL-----------------------------------------------------------------------------------------
-
 app.get('/complejidadTotal', async (req, res) => {
   try {
-    const [rows, fields] = await db.promise().query('SELECT SUM(complejidad) as total FROM proyectos');
-
-    const complejidadTotal = rows[0].total;
+    const [rows] = await db.promise().query(
+      'SELECT SUM(p.complejidad) AS complejidad_total FROM proyectos p JOIN carga c ON p.idproyectos = c.fk_idproyecto'
+    );
+    const complejidadTotal = rows[0].complejidad_total; 
     res.json({ complejidadTotal });
   } catch (err) {
-    console.error('Error al obtener la complejidad total: ', err);
+    console.error('Error al obtener la complejidad total:', err);
     res.status(500).json({ error: 'Error en el servidor' });
   }
 });
