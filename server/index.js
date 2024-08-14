@@ -137,6 +137,49 @@ app.get('/perfil', (req,res) =>{
 })
 //---------------------------------------------------------PROYECTO---------------------------------------------------------------------------------------------------
 
+app.delete('/deleteproyecto/:idproyectos',(req, res)=>{
+  const idproyectos = req.params.idproyectos;
+
+  db.query('delete from gestion_proyectos.proyectos where idproyectos = ?', [idproyectos],
+    (err, result) => {
+      if(err){
+        console.log(err)
+      }else{
+        res.send(result)
+      }
+    }
+  )
+})
+
+app.get('/ProyectosPerfiles/:idusuario', (req, res) => {
+  const idusuario = req.params.idusuario;
+
+  db.query('select proyectos.nombre as nombreProyecto, p.nombre as nombrePerfil, ct.nombre as nombreCT from proyectos left join carga c on proyectos.idproyectos = c.fk_idproyecto left join comisiontecnica ct on ct.idcomisiontecnica = c.fk_idperfilct left join perfil p on p.idperfil = c.fk_idperfil where c.fk_iduser = ?', [idusuario],
+    (err, result) =>{
+      if(err){
+        console.log(err)
+      }else{
+        res.send(result)
+      }
+    }
+  )
+})
+
+app.get('/nombreproyectosusuario/:idusuario', (req, res)=>{
+  
+  const idusuario = req.params.idusuario;
+
+  db.query('select proyectos.nombre from proyectos left join carga on proyectos.idproyectos = carga.fk_idproyecto where carga.fk_iduser = ?', [idusuario],
+    (err, result)=>{
+      if(err){
+        console.log(err)
+      }else{
+        res.send(result)
+      }
+    }
+  )
+})
+
 app.post('/crearproyecto', async (req, res) => {
   const { nombreProyecto, complejidad } = req.body;
   try {
@@ -179,6 +222,36 @@ app.get('/proyectos', (req,res)=>{
 
 
 //---------------------------------------------------------USUARIOS-------------------------------------------------------------------------------------------------
+
+app.delete('/deletecargausuario/:idusuario', (req,res) =>{
+  const  idusuario = req.params.idusuario;
+
+  db.query('DELETE FROM  carga where fk_iduser = ?', [idusuario],
+    (err, result) =>{
+      if(err){
+        console.log(err);
+      }else{
+        res.send(result);
+      }
+    }
+  )
+
+})
+
+
+app.delete('/deleteusuario/:idusuario', (req, res)=>{
+  const idusuario = req.params.idusuario;
+
+  db.query('DELETE FROM usuario where idusuario = ?', [idusuario],
+    (err, result) =>{
+      if(err){
+        console.log(err);
+      }else{
+        res.send(result);
+      }
+    }
+  )
+})
 
 app.get('/validarusuario/:userBanec', async (req, res) => {
   const userBanec = req.params.userBanec;

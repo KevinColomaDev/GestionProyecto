@@ -14,12 +14,34 @@ function CrearUsuario(){
     const [cargo, setCargo] = useState('');
     const [userBanecExists, setUserBanecExists] = useState(false);
     const [isLoading, setIsLoading]= useState(false);
+    const [usuarios, setUsuarios] = useState([]);
+    const [showModal, setShowModal] = useState(false); 
+    const [selectedUser, setSelectedUser] = useState(null);
+    const [proyectosPerfiles, setProyectosPerfiles] = useState([]);
+
+    useEffect(() =>{
+        
+    })
+
+    const getUsuarios = async ()=>{
+        try{
+            const response = await axios.get("http://10.157.152.50:3001/usuarios")
+                setUsuarios(response.data);
+            }catch (error){
+                console.error('Error fetching data:' , error);
+            }
+        }
+
+    useEffect(()=>{
+        getUsuarios();
+    }, [])
+        
+    
 
     useEffect(()=>{
         const validarUserBanec = async () =>{
             if (userBanec.trim() !== ''){
                 setIsLoading(true);
-
                 try{
                     const response = await axios.get(`http://10.157.152.50:3001/validarusuario/${userBanec}`)
                     setUserBanecExists(response.data.exists)
@@ -44,6 +66,19 @@ function CrearUsuario(){
 
     },[userBanec])
     
+
+    const openModal = async (idusuario) => {
+        const response = await axios.get(`http://10.157.152.50:3001/ProyectosPerfiles/${idusuario}`);
+        setProyectosPerfiles(response.data);
+        setSelectedUser(idusuario);
+        setShowModal(true);
+      };
+    
+      // Función para cerrar el modal
+      const closeModal = () => {
+        setSelectedUser(null);
+        setShowModal(false);
+      };
 
     const add = (event) => {
     event.preventDefault();
@@ -70,6 +105,7 @@ function CrearUsuario(){
         })
         .then(() => {
             limpiarData();
+            getUsuarios();
             Swal.fire({
                 title: "<strong>Registro exitoso!!</strong>",
                 html: "<i>El usuario <strong>" + userBanec + " </strong>fue registrado con éxito</i>",
@@ -88,6 +124,72 @@ function CrearUsuario(){
     }
     
 };
+
+const deleteusuario = async (idusuario) =>{
+
+    try {
+        // 1. Fetch User's Projects
+        const userProjectsResponse = await axios.get(`http://10.157.152.50:3001/nombreproyectosusuario/${idusuario}`);
+        const userProjects = userProjectsResponse.data;
+        console.log(userProjects);
+  
+        if (userProjects.length > 0) {
+          // 2. SweetAlert Confirmation with Project List
+          const confirmation = await Swal.fire({
+            title: "Confirmación",
+            html: `
+              El usuario está vinculado a los siguientes proyectos:
+              <ul>${userProjects.map(p => `<li>${p.nombre}</li>`).join('')}</ul>
+              ¿Desea eliminar al usuario y desvincularlo de estos proyectos?
+            `,
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#d33",
+            cancelButtonColor: "#3085d6",
+            confirmButtonText: "Sí, eliminar y desvincular",
+            cancelButtonText: "Cancelar",
+          });
+  
+          if (confirmation.isConfirmed) {
+            // 3. Delete Project Assignments (if confirmed)
+            await axios.delete(`http://10.157.152.50:3001/deletecargausuario/${idusuario}`)
+       
+  
+            // 4. Delete User 
+            await axios.delete(`http://10.157.152.50:3001/deleteusuario/${idusuario}`);
+  
+            Swal.fire({
+              title: "Eliminación exitosa!!",
+              html: "<i>El usuario se eliminó con éxito</i>",
+              icon: 'success',
+              timer: 1000
+            });
+
+            getUsuarios();
+          }
+        } else {
+          // User has no projects, proceed with deletion directly
+          await axios.delete(`http://10.157.152.50:3001/deleteusuario/${idusuario}`);
+  
+          Swal.fire({
+            title: "Eliminación exitosa!!",
+            html: "<i>El usuario se eliminó con éxito</i>",
+            icon: 'success',
+            timer: 1000
+          });
+        }
+      } catch (error) {
+        console.error("Error al eliminar usuario:", error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Oops...',
+          text: 'Hubo un error al eliminar el usuario.' 
+        });
+      }
+
+    
+}
+
 
 const limpiarData=()=>{
     setNombreUsuario('');
@@ -173,7 +275,105 @@ return (
 
           
         </div>
-          
+
+        <table className="table table-striped">
+                    <thead>
+                        <tr>
+                            <th scope="col">Nombre</th>
+                            <th scope="col">Apellido</th>
+                            <th scope="col">Usuario</th>
+                            <th scope="col">Proyectos Asignados</th>
+                            <th scope="col"></th>
+                            
+                        </tr> 
+
+                    </thead>
+                    <tbody>
+                        {
+                            usuarios
+                            .map((val, key) => {
+                                return (
+                                    <tr key={val.idusuario}>
+                                        <td>{val.nombre}</td>
+                                        <td>{val.apellido}</td>
+                                        <td>{val.user}</td>
+                                        <td>
+                                            <div className="btn-group" role="group" aria-label="Basic example">
+                                                <button
+                                                    onClick={()=>{
+                                                        openModal(val.idusuario)
+                                                    }}
+                                                className="btn btn-success">Ver</button>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div className="btn-group" role="group" aria-label="Basic example">
+                                                <button
+                                                    onClick={() => {
+                                                        deleteusuario(val.idusuario);
+                                                    }}
+                                                    className="btn btn-danger">Eliminar</button>
+                                            </div>
+                                        </td>
+                                        
+                                    </tr>
+                                );
+                            })
+                        }
+                    </tbody>
+                </table>
+                {showModal && (
+        <div className="modal" tabIndex="-1" role="dialog" style={{ display: 'block' }}>
+          <div className="modal-dialog" role="document">
+            <div className="modal-content">   
+
+              <div className="modal-header">
+                <h5 className="modal-title">Proyectos Asignados</h5>
+                <button type="button" className="close" onClick={closeModal}>
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div className="modal-body">   
+
+                {/* Muestra los detalles del usuario seleccionado */}
+                {selectedUser && (
+                  <div>
+                        <table className="table table-striped">
+                    <thead>
+                        <tr>
+                            <th scope="col">Proyectos</th>
+                            <th scope="col">Perfil</th>
+                            <th scope="col">Comision tecnica</th>
+                        </tr> 
+
+                    </thead>
+                    <tbody>
+                        {
+                            proyectosPerfiles
+                            .map((val, key) => {
+                                return (
+                                    <tr key={val.nombreProyecto}>
+                                        <td>{val.nombreProyecto}</td>
+                                        <td>{val.nombrePerfil}</td>
+                                        <td>{val.nombreCT}</td>
+                                    </tr>
+                                );
+                            })
+                        }
+                    </tbody>
+                </table>
+                  </div>
+                )}
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="btn btn-secondary" onClick={closeModal}>Cerrar</button>
+              </div>
+            </div>   
+
+          </div>
+        </div>   
+
+      )}
         </div>
     </div>
 )
